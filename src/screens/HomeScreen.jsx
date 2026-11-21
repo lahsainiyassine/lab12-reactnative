@@ -12,10 +12,11 @@ export default function HomeScreen() {
 
   const fetchProducts = async () => {
     try {
-      const res = await apiClient.get('/products');
-      setProducts(res.data.slice(0, 15));
+      const res = await apiClient.get('/products?limit=15');
+      setProducts(res.data);
     } catch (err) {
-      console.error(err);
+      console.error('Erreur chargement:', err.message);
+      Alert.alert('Erreur', 'Impossible de charger les produits : ' + err.message);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -35,21 +36,27 @@ export default function HomeScreen() {
     try {
       if (selectedProduct) {
         // UPDATE (PUT)
-        const res = await apiClient.put(`/products/${selectedProduct.id}`, data);
-        setProducts(products.map((p) => (p.id === selectedProduct.id ? res.data : p)));
+        await apiClient.put(`/products/${selectedProduct.id}`, data);
+        setProducts(
+          products.map((p) => (p.id === selectedProduct.id ? { ...p, ...data } : p))
+        );
         setSelectedProduct(null);
       } else {
         // CREATE (POST)
         const res = await apiClient.post('/products', {
           ...data,
-          description: 'Description par défaut',
-          categoryId: 1,
-          images: ['https://placehold.co/600x400'],
+          description: 'Description du produit',
+          category: 'electronics',
+          image: 'https://fakestoreapi.com/img/81fPKd-2AYL._AC_SL1500_.jpg',
         });
-        setProducts([res.data, ...products]);
+        const newProduct = {
+          id: res.data?.id || Date.now(),
+          ...data,
+        };
+        setProducts([newProduct, ...products]);
       }
     } catch (err) {
-      Alert.alert('Erreur', 'Impossible de sauvegarder le produit.');
+      Alert.alert('Erreur', 'Impossible de sauvegarder le produit : ' + err.message);
     }
   };
 
@@ -64,7 +71,7 @@ export default function HomeScreen() {
             await apiClient.delete(`/products/${id}`);
             setProducts(products.filter((p) => p.id !== id));
           } catch (err) {
-            Alert.alert('Erreur', 'Impossible de supprimer le produit.');
+            Alert.alert('Erreur', 'Impossible de supprimer le produit : ' + err.message);
           }
         },
       },
@@ -98,6 +105,6 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#f5f5f5', paddingTop: 50 },
+  container: { flex: 1, padding: 16, backgroundColor: '#f5f5f5', paddingTop: 20 },
   title: { fontSize: 22, fontWeight: 'bold', marginBottom: 15, textAlign: 'center', color: '#333' },
 });

@@ -1,13 +1,13 @@
 import React from 'react';
-import { SafeAreaView, StatusBar, StyleSheet } from 'react-native';
+import { View, StatusBar, StyleSheet, Platform } from 'react-native';
 import HomeScreen from './src/screens/HomeScreen';
 
 export default function App() {
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
       <HomeScreen />
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -15,5 +15,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F5F5F5',
+    paddingTop: Platform.OS === 'ios' ? 44 : 20,
   },
 });
